@@ -1,0 +1,38 @@
+<mt:setvarblock name="html_head" append="1">
+    <style type="text/css">
+    #csv_data {
+        width: 605px;
+        height: 310px;
+        font-family: monospace;
+        font-size: 11px;
+    }
+    </style>
+</mt:setvarblock>
+
+<mt:setvarblock name="page_title">Export User Data: Export</mt:setvarblock>
+
+<mt:include name="dialog/header.tmpl">
+
+<form method="post" enctype="multipart/form-data" action="<mt:var name="script_url">" name="export">
+    <input type="hidden" name="__mode" value="eud_download_csv" />
+
+    <p>The exported data can be found at <code><mt:Var name="file_path"></code>, which is <mt:Var name="file_size"> bytes large.</p>
+    <p>Or, just <a href="javascript:document.forms['export'].submit();">download the exported data</a> now.</p>
+
+<mt:If name="csv_data">
+    <textarea name="csv_data" id="csv_data" class="full-width"><mt:Var name="csv_data"></textarea>
+</mt:If>
+
+    <div class="actions-bar">
+        <div class="actions-bar-inner pkg actions">
+            <button
+                onclick="closeDialog(); return false"
+                type="submit"
+                class="cancel"
+                accesskey="x"
+                title="Close (x)">Close</button>
+        </div>
+    </div>
+</form>
+
+<mt:include name="dialog/footer.tmpl">

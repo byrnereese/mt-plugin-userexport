@@ -1,0 +1,26 @@
+<mtapp:setting
+    id="export_directory"
+    label="Export Directory"
+    required="1"
+    hint="Specify an absolute path to export your user data to. Be sure this location is writable by Movable Type."
+    show_hint="1">
+    <input type="text" name="export_directory" id="export_directory" value="<mt:Var name="export_directory">" class="full-width" />
+</mtapp:setting>
+
+<mtapp:setting
+    id="export_filename"
+    label="Export Filename"
+    required="1"
+    hint="Specify the filename that should be written to the specified Export Directory."
+    show_hint="1">
+    <input type="text" name="export_filename" id="export_filename" value="<mt:Var name="export_filename">" class="full-width" />
+</mtapp:setting>
+
+<mtapp:setting
+    id="display_export_results"
+    label="Display Export Results"
+    hint="Depending upon the size of your dataset, this may take a while to download. The exported results are always available to download from the Export Directory location, regardless of this option."
+    show_hint="1">
+    <input type="checkbox" name="display_export_results" id="display_export_results"<mt:If name="display_export_results"> checked="checked"</mt:If> />
+    <label for="display_export_results">Display the results when the export is finished.</label>
+</mtapp:setting>

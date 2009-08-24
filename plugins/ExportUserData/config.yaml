@@ -1,0 +1,44 @@
+name: Export User Data
+id: exportuserdata
+description: Export your user's info to a <code>.csv</code> file.
+version: 1.0
+author_name: Endevver
+author_link: http://endevver.com
+
+applications:
+    cms:
+        methods:
+            eud:              $ExportUserData::ExportUserData::CMS::start
+            eud_sort:         $ExportUserData::ExportUserData::CMS::sort
+            eud_export:       $ExportUserData::ExportUserData::CMS::export
+            eud_download_csv: $ExportUserData::ExportUserData::CMS::download_csv
+
+page_actions:
+    list_user:
+        export_user_data:
+            label:      Export user data
+            order:      500
+            permission: administer
+            dialog:     eud
+    # This list_authors option is necessary to make the Page Action show when
+    # navigating to the upper-right System Overview menu and choosing user.
+    # list_user is called when visiting through Manage > Users
+    list_authors:
+        export_user_data:
+            label:      Export user data
+            order:      500
+            permission: administer
+            dialog:     eud
+
+system_config_template: config.mtml
+settings:
+    export_directory:
+        scope: system
+        default: '/tmp'
+    export_filename:
+        scope: system
+        default: 'export.csv'
+    display_export_results:
+        scope: system
+        default: '0'
+

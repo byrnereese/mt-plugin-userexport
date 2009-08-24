@@ -1,0 +1,167 @@
+<mt:setvarblock name="html_head" append="1">
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+    <script type="text/javascript" src="<mt:StaticWebPath>plugins/ExportUserData/jquery.tablednd_0_5.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            // Initialise the table
+            $("#user-fields").tableDnD({
+                serializeRegexp: /^.*$/,
+                onDragClass: "drag",
+            });
+            // Add the stripe effect
+            $("#user-fields tr:odd").addClass('odd');
+        });
+        function prep() {
+            // Display the status indicator
+            $('#status').css('display', 'block');
+            // tableDnDSerialize() will create a list of the order of the drag-dropped fields
+            $('#field-order').val( $('#user-fields').tableDnDSerialize() );
+            document.forms['sort'].submit();
+            // Disable all of the buttons and checkbox fields.
+            $('button').attr('disabled', 'disabled');
+            $(':input').attr('disabled', 'disabled');
+        }
+    </script>
+    <style type="text/css">
+        #fields {
+            height: 350px;
+            overflow: auto;
+        }
+        table#user-fields {
+            width: 595px;
+            border: 1px solid #cddee7;
+            background: #fff;
+        }
+        tr { background: url(<mt:StaticWebPath>plugins/ExportUserData/drag.png) 11px 6px no-repeat;}
+        th { font-weight: bold; }
+        th,td {
+            padding: 4px 8px;
+        }
+        .select {
+            text-align: center;
+            width:40px;
+            padding-left: 30px;
+        }
+        .odd { background-color: #f3f6f9; }
+        .drag { background-color: #ddd; }
+        .nodrag {
+            background-image: url(<mt:StaticWebPath>images/locked.gif);
+            background-repeat: no-repeat;
+            background-position: 8px 6px;
+        }
+        #status {
+            position: absolute;
+            z-index: 1000;
+            top: 110px;
+            left: 185px;
+            width: 200px;
+            height: 140px;
+            background: #fff;
+            border: 1px solid #999;
+            text-align: center;
+            padding: 20px;
+        }
+        #status-inner div {
+            margin-top: 30px;
+        }
+    </style>
+</mt:setvarblock>
+
+<mt:setvarblock name="page_title">Export User Data: Fields</mt:setvarblock>
+
+<mt:include name="dialog/header.tmpl">
+
+<div id="status" style="display: none;">
+    <div id="status-inner">
+        <p>The selected data is exporting.<br />This may take a few moments.</p>
+        <div><img src="<mt:StaticWebPath>images/indicator.gif" width="66" height="66" alt="status indicator" /></div>
+    </div>
+</div>
+
+<form method="post" enctype="multipart/form-data" action="<mt:var name="script_url">" name="sort">
+    <input type="hidden" name="__mode" value="eud_export" />
+    <input type="hidden" name="status" value="<mt:Var name="status">" />
+    <input type="hidden" name="blogs" value="<mt:Var name="blogs">" />
+    <input type="hidden" name="roles" value="<mt:Var name="roles">" />
+    <input type="hidden" name="field-order" id="field-order" value="" />
+
+    <p>Select the fields to be exported by enabling the "export" checkbox. Drag to reorder fields.
+    <div id="fields">
+        <table id="user-fields">
+            <tr class="nodrag nodrop">
+                <th class="select">Export</th>
+                <th>Field name</th>
+            </tr>
+            <tr id="author_id" class="nodrag nodrop">
+                <td class="select"><input type="checkbox" name="field" id="field_author_id" value="author_id" checked="checked" /></td>
+                <td><label for="field_author_id">User ID</label></td>
+            </tr>
+            <tr id="author_name">
+                <td class="select"><input type="checkbox" name="field" id="field_author_name" value="author_name" checked="checked" /></td>
+                <td><label for="field_author_name">Username</label></td>
+            </tr>
+            <tr id="author_nickname">
+                <td class="select"><input type="checkbox" name="field" id="field_author_nickname" value="author_nickname" checked="checked" /></td>
+                <td><label for="field_author_nickname">Display name</label></td>
+            </tr>
+            <tr id="author_created_on_date">
+                <td class="select"><input type="checkbox" name="field" id="field_author_created_on_date" value="author_created_on_date" checked="checked" /></td>
+                <td><label for="field_author_created_on_date">Created on (date)</label></td>
+            </tr>
+            <tr id="author_created_on_time">
+                <td class="select"><input type="checkbox" name="field" id="field_author_created_on_time" value="author_created_on_time" /></td>
+                <td><label for="field_author_created_on_time">Created on (time)</label></td>
+            </tr>
+            <tr id="author_email">
+                <td class="select"><input type="checkbox" name="field" id="field_author_email" value="author_email" checked="checked" /></td>
+                <td><label for="field_author_email">Email</label></td>
+            </tr>
+            <tr id="author_url">
+                <td class="select"><input type="checkbox" name="field" id="field_author_url" value="author_url" checked="checked" /></td>
+                <td><label for="field_author_url">Website URL</label></td>
+            </tr>
+            <tr id="author_userpic_asset_id">
+                <td class="select"><input type="checkbox" name="field" id="field_author_userpic_asset_id" value="author_userpic_asset_id" checked="checked" /></td>
+                <td><label for="field_author_userpic_asset_id">Userpic URL</label></td>
+            </tr>
+            <tr id="author_status">
+                <td class="select"><input type="checkbox" name="field" id="field_author_status" value="author_status" /></td>
+                <td><label for="field_author_status">Status</label></td>
+            </tr>
+            <tr id="author_role">
+                <td class="select"><input type="checkbox" name="field" id="field_author_role" value="author_role" /></td>
+                <td><label for="field_author_role">Role and Blog Association</label></td>
+            </tr>
+<mt:Loop name="cf_loop">
+            <tr id="customfield_<mt:Var name="basename">">
+                <td class="select">
+                    <input type="checkbox" name="field" id="field_customfield_<mt:Var name="basename">" value="customfield_<mt:Var name="basename">" checked="checked" />
+                </td>
+                <td>
+                    <label for="field_customfield_<mt:Var name="basename">">
+                        <mt:Var name="name"><mt:If name="description"> (<mt:Var name="description">)</mt:If>
+                    </label>
+                </td>
+            </tr>
+</mt:Loop>
+        </table>
+    </div>
+
+    <div class="actions-bar">
+        <div class="actions-bar-inner pkg actions">
+            <button
+                onclick="prep();"
+                type="button"
+                accesskey="s"
+                class="primary-button close">Export</button>
+            <button
+                onclick="closeDialog(); return false"
+                type="submit"
+                class="cancel"
+                accesskey="x"
+                title="Cancel (x)">Cancel</button>
+        </div>
+    </div>
+</form>
+
+<mt:include name="dialog/footer.tmpl">

@@ -1,0 +1,74 @@
+<mt:setvarblock name="html_head" append="1">
+    <style type="text/css">
+        .data {
+            margin-bottom: 20px;
+        }
+        select {
+            margin-left: 20px;
+            width: 585px;
+        }
+        select.multiple {
+            height: 105px;
+        }
+    </style>
+</mt:setvarblock>
+
+<mt:setvarblock name="page_title">Export User Data: Filter</mt:setvarblock>
+
+<mt:include name="dialog/header.tmpl">
+
+<form method="post" enctype="multipart/form-data" action="<mt:var name="script_url">" name="filter">
+    <input type="hidden" name="__mode" value="eud_sort" />
+
+    <p>Use the fields below to filter the user data you want to export.</p>
+
+    <div class="data">
+        <p>Select the user&rsquo;s status.</p>
+        <select name="status">
+            <option value="1" selected="selected">Enabled</option>
+            <option value="2">Disabled</option>
+            <option value="3">Pending</option>
+            <option value="">All</option>
+        </select>
+    </div>
+
+    <div class="data">
+        <p>Select the user&rsquo;s role.</p>
+        <select name="roles" multiple="multiple" class="multiple">
+            <option value="all" selected="selected">All</option>
+        <mt:Loop name="role_loop">
+            <option value="<mt:Var name="role_id">"><mt:Var name="role_name"></option>
+        </mt:Loop>
+        </select>
+    </div>
+
+    <div class="data">
+        <p>Select the blog(s) to export from.</p>
+        <select name="blogs" multiple="multiple" class="multiple">
+            <option value="all" selected="selected">All</option>
+        <mt:Blogs>
+            <option value="<mt:BlogID>"><mt:BlogName></option>
+        </mt:Blogs>
+        </select>
+    </div>
+
+
+
+    <div class="actions-bar">
+        <div class="actions-bar-inner pkg actions">
+            <button
+                onclick="document.forms['filter'].submit();"
+                type="button"
+                accesskey="s"
+                class="primary-button close">Select Fields</button>
+            <button
+                onclick="closeDialog(); return false"
+                type="submit"
+                class="cancel"
+                accesskey="x"
+                title="Cancel (x)">Cancel</button>
+        </div>
+    </div>
+</form>
+
+<mt:include name="dialog/footer.tmpl">
