@@ -38,6 +38,12 @@ Lastly, on the **Export** screen you're presented with the result! The file name
 
 The resulting comma-separated file can be imported and analyzed with Numbers or Excel or other spreadsheet application!
 
+# Acknowledgements
+
+This plugin was commissioned by Endevver to Dan Wolfgang of uiNNOVATIONS. Endevver is proud to be partners with uiNNOVATIONS.
+
+http://uinnovations.com/
+
 # License
 
 This plugin is licensed under the same terms as Perl itself.
