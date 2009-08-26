@@ -17,7 +17,7 @@ sub start {
     # First, the user can create a simple filter to whittle down the results.
     # The blog and status filters don't need any help to be created; only the Roles do.
     use MT::Role;
-    my @all_roles = MT::Role->load( undef, { sort => 'name' });
+    my @all_roles = MT->model('role')->load( undef, { sort => 'name' });
     my @role_loop;
     foreach my $r (@all_roles) {
         push @role_loop, { role_id => $r->id, role_name => $r->name };
@@ -57,8 +57,7 @@ sub sort {
     
     # We need to create the custom field pieces ourself, because MT's custom
     # field tags don't make the basename available.
-    use CustomFields::Field;
-    my @fields = CustomFields::Field->load({ obj_type => 'author', });
+    my @fields = MT->model('field')->load({ obj_type => 'author', });
     my @cf_loop;
     foreach my $field (@fields) {
         push @cf_loop, { basename => $field->basename,
@@ -86,7 +85,7 @@ sub export {
 
     # Fields are collected, but they are out of order. use the field-order to
     # resort them. But first, clean up field-order.
-    my @sorted_fields = split /\&?user-fields\[\]\=/, $q->param('field-order');
+    my @sorted_fields = split(/\&?user-fields\[\]\=/, $q->param('field-order'));
     # This is the list of sorted, selected fields to export
     my @fields; 
     foreach my $field (@sorted_fields) {
@@ -113,20 +112,16 @@ sub export {
     }
     my $text = _csv_row(@header);
 
-    use MT::Role;
-    use MT::Association;
-    use MT::Author;
-
     my $terms = {};
     if ($status) {
         $terms->{status} = $status;
     }
 
-    my $iter = MT::Author->load_iter($terms);
+    my $iter = MT->model('author')->load_iter($terms);
     while ( my $author = $iter->() ) {
         # Associations are used for both the role and blog options. No need to
         # look them up for each request, so just do it once here.
-        my @assoc = MT::Association->load({ author_id => $author->id, });
+        my @assoc = MT->model('association')->load({ author_id => $author->id, });
 
         my ($role_filter, $blog_filter);
         foreach my $assoc (@assoc) {
@@ -160,7 +155,7 @@ sub export {
         }
         # System administrators don't necessarily have roles attached to them,
         # but since they have total control, then need to be exported.
-        my @perms = MT::Permission->load({ author_id => $author->id, });
+        my @perms = MT->model('permission')->load({ author_id => $author->id, });
         PERMISSIONS:foreach my $perm (@perms) {
             if ($perm->permissions =~ /'administer'/) {
                 $role_filter = 1;
@@ -187,8 +182,7 @@ sub export {
                     # This is the userpic. Check that there is an ID in the userpic_asset_id field
                     # for this user before trying to grab the asset.
                     if ($author->userpic_asset_id) {
-                        use MT::Asset;
-                        my $asset = MT::Asset->load( $author->userpic_asset_id );
+                        my $asset = MT->model('asset')->load( $author->userpic_asset_id );
                         # Just return the userpic URL.
                         $val = $asset->url;
                     }
@@ -237,8 +231,8 @@ sub export {
                     # The MT::Association load was done at the top of this foreach, so
                     # no need to re-do it here.
                     foreach $assoc (@assoc) {
-                        $role = MT::Role->load($assoc->role_id);
-                        $blog = MT::Blog->load($assoc->blog_id);
+                        $role = MT->model('role')->load($assoc->role_id);
+                        $blog = MT->model('blog')->load($assoc->blog_id);
                         push @roles, $role->name.': '.$blog->name.' ('.$blog->id.')';
                     }
                     $val = join(', ', @roles);
