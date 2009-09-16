@@ -11,7 +11,6 @@ applications:
             eud:              $ExportUserData::ExportUserData::CMS::start
             eud_sort:         $ExportUserData::ExportUserData::CMS::sort
             eud_export:       $ExportUserData::ExportUserData::CMS::export
-            eud_download_csv: $ExportUserData::ExportUserData::CMS::download_csv
 
 page_actions:
     list_user:
@@ -29,16 +28,4 @@ page_actions:
             order:      500
             permission: administer
             dialog:     eud
-
-system_config_template: config.mtml
-settings:
-    export_directory:
-        scope: system
-        default: '/tmp'
-    export_filename:
-        scope: system
-        default: 'export.csv'
-    display_export_results:
-        scope: system
-        default: '0'
 

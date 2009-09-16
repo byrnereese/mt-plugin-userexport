@@ -20,6 +20,8 @@
             // Disable all of the buttons and checkbox fields.
             $('button').attr('disabled', 'disabled');
             $(':input').attr('disabled', 'disabled');
+            // Close this dialog 5 secs later, because it's not needed anymore.
+            setTimeout(function(){ closeDialog(); }, 5000 );
         }
     </script>
     <style type="text/css">
@@ -79,10 +81,11 @@
 </div>
 
 <form method="post" enctype="multipart/form-data" action="<mt:var name="script_url">" name="sort">
-    <input type="hidden" name="__mode" value="eud_export" />
-    <input type="hidden" name="status" value="<mt:Var name="status">" />
-    <input type="hidden" name="blogs" value="<mt:Var name="blogs">" />
-    <input type="hidden" name="roles" value="<mt:Var name="roles">" />
+    <input type="hidden" name="__mode"     value="eud_export" />
+    <input type="hidden" name="status"     value="<mt:Var name="status">" />
+    <input type="hidden" name="blogs"      value="<mt:Var name="blogs">" />
+    <input type="hidden" name="roles"      value="<mt:Var name="roles">" />
+    <input type="hidden" name="authmethod" value="<mt:Var name="authmethod">" />
     <input type="hidden" name="field-order" id="field-order" value="" />
 
     <p>Select the fields to be exported by enabling the "export" checkbox. Drag to reorder fields.
