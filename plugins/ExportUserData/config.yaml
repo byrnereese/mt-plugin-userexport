@@ -1,7 +1,7 @@
 name: Export User Data
 id: exportuserdata
-description: Export your user's info to a <code>.csv</code> file.
-version: 1.0
+description: "Export your user's info to a <code>.csv</code> file."
+version: 1.0.1
 author_name: Endevver
 author_link: http://endevver.com
 
