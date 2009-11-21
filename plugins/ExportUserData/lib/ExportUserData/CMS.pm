@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use MT 4;
 use MT::Util qw( format_ts );
+use CGI;
 
 use Text::CSV;
 my $csv = Text::CSV->new({ eol    => "\n",
@@ -37,6 +38,7 @@ sub sort {
     # Grab the values from the filter form so that we have them ready to use.
     my @blogs = $q->param('blogs');
     my @roles = $q->param('roles');
+    $param->{authmethod} = $q->param('authmethod');
     $param->{status} = $q->param('status');
 
     # If "all" was selected from the blog or role selector, trash any other
@@ -110,23 +112,53 @@ sub export {
         $field =~ s/^author_(.*?)$/$1/;
         push @header, $field;
     }
-    my $text = _csv_row(@header);
+    my $data_header = _csv_row(@header);
+    my $data; # Used (and reset) later, but if there is no data to export,
+              # we need this definition.
 
     my $terms = {};
     if ($status) {
         $terms->{status} = $status;
     }
+    
+    my $start_header; # A boolean to know whether or not to send the "start download" header.
 
     my $iter = MT->model('author')->load_iter($terms);
     while ( my $author = $iter->() ) {
+        my $data; # Used later, for the exported data
         # Associations are used for both the role and blog options. No need to
         # look them up for each request, so just do it once here.
         my @assoc = MT->model('association')->load({ author_id => $author->id, });
 
-        my ($role_filter, $blog_filter);
+        my ($author_filter, $role_filter, $blog_filter);
+        
+        # There are no MT::Association records if this is a 3rd-party
+        # authenticated or anonymous commenter. But, we want to export them, too.
+        if ( $q->param('authmethod') eq '1' ) {
+            $author_filter = 1;
+            $role_filter = 1;
+            $blog_filter = 1;
+        }
+        # If the status is "pending" or "disabled"  allow the author.
+        if ( ($status == 3) || ($status == 2) ) {
+            $author_filter = 1;
+            $role_filter = 1;
+            $blog_filter = 1;
+        }
+        elsif ( $status == '' ) { # "All" was selected for the status
+            if ($author->type == 1) { # This is an MT author, so include them.
+                $author_filter = 1;
+            }
+            $role_filter = 1;
+            $blog_filter = 1;
+        }
+
         foreach my $assoc (@assoc) {
+            # Because there is an association record, we know this is an MT-native author.
+            $author_filter = 1;
+
             # If specific roles were selected, compare them against this author's perms.
-            if (@role_ids) { # @roles is true only if individual roles were selected (not "all")
+            if (@role_ids) { # @role_ids is true only if individual roles were selected (not "all")
                 my $roleid = $assoc->role_id;
                 if ( grep(/$roleid/, @role_ids) ) {
                     $role_filter = 1;
@@ -139,7 +171,7 @@ sub export {
                 $role_filter = 1;
             }
             
-            # If specific blogs were selectec, compare them against this author's perms.
+            # If specific blogs were selected, compare them against this author's perms.
             if (@blog_ids) { # @blog_ids is true only if individual blogs were selected (not "all")
                 my $blogid = $assoc->blog_id;
                 if ( grep(/$blogid/, @blog_ids) ) {
@@ -166,9 +198,8 @@ sub export {
             }
         }
 
-
         my ($field, @detail);
-        if ($role_filter && $blog_filter) {
+        if ($author_filter && $role_filter && $blog_filter) {
             foreach $field (@fields) {
                 # Reset variables just in case there isn't any result to match this $field.
                 my ($val, $basename, $ts, $assoc, @roles, $role, $perm, @blogs, $blog);
@@ -244,49 +275,30 @@ sub export {
                 }
                 push @detail, $val;
             }
-            $text .= _csv_row(@detail);
+            $data = _csv_row(@detail);
         } # end of the $role_filter && $blog_filter check
+
+        # Start the download process so the user can get the results
+        if ($data) {
+            if (!$start_header) {
+                $app->{no_print_body} = 1;
+                $app->set_header(
+                    "Content-Disposition" => "attachment; filename=export.csv" );
+                $app->send_http_header('application/octet-stream');
+                $app->print($data_header); # This is the header row, with the field names
+                $start_header = 'done'; # The header has been sent, so set a 
+                                        # variable so that it can't be resent.
+            }
+            $app->print($data);
+        }
     }
-
-    my $plugin = MT->component("exportuserdata");
-    my $config = $plugin->get_config_hash('system');
-
-    # Finally, write the export data to the specified file.
-    my $file = File::Spec->catfile($config->{'export_directory'}, $config->{'export_filename'});
-    use MT::FileMgr;
-    my $fmgr = MT::FileMgr->new('Local')
-        or die MT::FileMgr->errstr;
-    my $size = $fmgr->put_data($text, $file);
-
-    $param->{file_path} = $file;
-    $param->{file_size} = $size;
-
-    if ($config->{'display_export_results'}) {
-        $param->{csv_data} = $text;
+    if (!$data) { # No result match the filter criteria!
+        my $tmpl = $plugin->load_tmpl('no-data.mtml');
+        return $app->build_page( $tmpl );
     }
-    my $tmpl = $plugin->load_tmpl('export.mtml');
-    return $app->build_page( $tmpl, $param );
-}
-
-sub download_csv {
-    my $app = shift;
-
-    my $plugin = MT->component("exportuserdata");
-    my $config = $plugin->get_config_hash('system');
-
-    my $file = File::Spec->catfile($config->{'export_directory'}, $config->{'export_filename'});
-    use MT::FileMgr;
-    my $fmgr = MT::FileMgr->new('Local')
-        or die MT::FileMgr->errstr;
-    my $data = $fmgr->get_data($file);
-    
-    use CGI;
-    my $q = CGI->new();
-    print $q->header(-type            => 'application/x-download',
-                     -attachment      => 'export.csv',
-                     -Content_length  => -s "$file",
-                    );       
-    print $data;
+    else {
+        return; # The download has started!
+    }
 }
 
 sub _csv_row {

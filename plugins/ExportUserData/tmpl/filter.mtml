@@ -1,14 +1,14 @@
 <mt:setvarblock name="html_head" append="1">
     <style type="text/css">
         .data {
-            margin-bottom: 20px;
+            margin-bottom: 13px;
         }
         select {
             margin-left: 20px;
             width: 585px;
         }
         select.multiple {
-            height: 105px;
+            height: 90px;
         }
     </style>
 </mt:setvarblock>
@@ -50,6 +50,10 @@
             <option value="<mt:BlogID>"><mt:BlogName></option>
         </mt:Blogs>
         </select>
+    </div>
+
+    <div class="data">
+        <p><input type="checkbox" name="authmethod" id="authmethod" value="1" style="display: block; float: left; margin: 0 5px 10px 0;" /> <label for="authmethod">Include users who authenticated with MT native in addition to other methods, such as OpenID, Typepad, and Facebook.</label></p>
     </div>
 
 
